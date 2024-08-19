@@ -1,0 +1,25 @@
+quarkus:
+  banner:
+    enabled: false
+  hibernate-orm:
+    database:
+      generation: none
+  swagger-ui:
+    always-include: true
+    operations-sorter: method
+
+mp:
+  openapi:
+    extensions:
+      smallrye:
+        info:
+          title: Football Manager API
+          version: 1.0.0
+          description: API for retrieving football managers
+          contact:
+            email: a@a.com
+            name: Football Manager API Support
+            url: https://github.com/quarkus-ground-up/customer-api
+          license:
+            name: Apache 2.0
+            url: http://www.apache.org/licenses/LICENSE-2.0.html

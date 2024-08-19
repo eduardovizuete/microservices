@@ -22,9 +22,10 @@ public class SoccerPlayerResourceTest {
     @Test
     void testGetSoccerPlayerEndpoint() {
         given()
-          .when().get()
-          .then()
-             .statusCode(200);
+                .when()
+                .get()
+                .then()
+                .statusCode(200);
 
         Mockito.verify(soccerPlayerService,
                 Mockito.times(1))
@@ -35,7 +36,8 @@ public class SoccerPlayerResourceTest {
     void testGetSoccerPlayerByIdEndpoint() {
         given()
                 .pathParam("id", 1L)
-                .when().get("{id}")
+                .when()
+                .get("{id}")
                 .then()
                 .body("name", equalTo("name"))
                 .statusCode(200);
@@ -52,7 +54,8 @@ public class SoccerPlayerResourceTest {
         given()
                 .contentType("application/json")
                 .body(soccerPlayerDTO)
-                .when().post()
+                .when()
+                .post()
                 .then()
                 .statusCode(200);
 
@@ -69,7 +72,8 @@ public class SoccerPlayerResourceTest {
         given()
                 .contentType("application/json")
                 .body(soccerPlayerDTO)
-                .when().put("{id}", id)
+                .when()
+                .put("{id}", id)
                 .then()
                 .statusCode(200);
 
@@ -84,7 +88,8 @@ public class SoccerPlayerResourceTest {
 
         given()
                 .pathParam("id", id)
-                .when().delete("{id}")
+                .when()
+                .delete("{id}")
                 .then()
                 .statusCode(200);
 

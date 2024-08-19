@@ -1,25 +1,35 @@
-# soccer-player-microservice
+# football-manager-microservice
 
-## soccer-player-microservice
+## football-manager-microservice
 
-A microservice application that handles the football players domain; it will expose create, read, update, and delete (CRUD) API, and it will store and retrieve information using a MYSQL database.
+A microservice application that handles the football managers (the people that manage the fantasy teams and participate in the fantasy league);
+it will expose create, read, update, and delete (CRUD) API, and it will store and retrieve information using a PostgreSQL database.
 
 In this Rest API project, we use several libraries such as:
 
 - Quarkus REST implement the Jakarta REST API commonly used in Spring, allowing each entity created to be generated into a database table.
 - Hibernate ORM with Panache: this library will provide the PanacheRepository class for ORM implementation.
-- JDBC MYSQL: we will use this driver to connect to the database.
+- JDBC Driver - PostgreSQL: we will use this driver to connect to the database.
 - Hibernate Validator: validates user input data.
 - Lombok (Optional): this library is not available on code.quarkus.io, you can add it yourself if you want to use it.
+- Mapstruct: Java bean mappings
 - Quarkus ARC
 - Quarkus rest-assured and Mockito libraries to run tests
+- YAML Configuration
+- Flyway
+- SmallRye OpenAPI
 
-> **_EXAMPLE FROM:_** How to Build REST API and Test with Quarkus (Panache ORM, Repository Pattern & Rest-Assured) at <https://blog.stackademic.com/how-to-build-rest-api-and-test-with-quarkus-panache-orm-repository-pattern-quarkustest-c325794f1f3f>.
+> **_EXAMPLE FROM:_** 
+
+- Build a REST API from the ground up with Quarkus 2.0
+<https://developers.redhat.com/articles/2022/02/03/build-rest-api-ground-quarkus-20#>
+
+- Build a REST API from the ground up with Quarkus 3.0
+<https://stephennimmo.com/2024/03/08/build-a-rest-api-from-the-ground-up-with-quarkus-3-0/>
 
 This project uses Quarkus, the Supersonic Subatomic Java Framework.
 
 If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
-
 
 ## Running the application in dev mode
 
