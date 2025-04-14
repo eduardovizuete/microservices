@@ -1,0 +1,87 @@
+{
+	"info": {
+		"_postman_id": "858fce40-2cde-4b87-b509-4a954fbcd87c",
+		"name": "K8sArqui Copy",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "18152215"
+	},
+	"item": [
+		{
+			"name": "G2-Micro-Obs-k8s",
+			"item": [
+				{
+					"name": "Inventory",
+					"item": [
+						{
+							"name": "get inventory",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:8080/services-inventory/inventories",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"services-inventory",
+										"inventories"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get inventory Copy",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"idProduct\": \"AC-15512\",\r\n  \"nameProduct\": \"Lentes\",\r\n  \"price\": 123.5,\r\n  \"stock\": 50\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "localhost:8080/services-inventory/inventories",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"services-inventory",
+										"inventories"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get inventory id",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "localhost:8080/services-inventory/inventories/AC-1550",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"services-inventory",
+										"inventories",
+										"AC-1550"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	]
+}
