@@ -5,23 +5,28 @@ databaseChangeLog:
       #context: dev, test, local
       changes:
         - createTable:
-            tableName: order-shop
-            schemaName: service-order
+            tableName: order_shop
+            #schemaName: service-order
             columns:
-              - column: id
-                type: INT
-                constraints:
-                  primaryKey: true
-                  nullable: false
-              - column: code_product
-                type: VARCHAR(50)
-                constraints:
-                  nullable: false
-              - column: date_order
-                type: VARCHAR(50)
-                constraints:
-                  nullable: false
-              - column: status_order
-                type: VARCHAR(50)
-                constraints:
-                  nullable: false
+              - column:
+                  name: id
+                  type: INT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: code_product
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: date_order
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status_order
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
