@@ -20,3 +20,67 @@ services:
       POSTGRES_PASSWORD: 123456789
     volumes:
       - ./db-scripts/postgres-init.sql:/docker-entrypoint-initdb.d/postgres-init.sql
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    network_mode: bridge
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: 123456789
+    volumes:
+      - ./db-scripts/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
+  kafka:
+    image: apache/kafka:3.8.0
+    container_name: kafka
+    network_mode: bridge
+    ports:
+      - "9092:9092"
+  kafka-kraft:
+    image: confluentinc/cp-kafka:7.7.1
+    container_name: kafka-kraft-default
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: "broker,controller"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka-kraft:29092,PLAINTEXT_HOST://localhost:9092"
+      KAFKA_LISTENERS: "PLAINTEXT://kafka-kraft:29092,CONTROLLER://kafka-kraft:29093,PLAINTEXT_HOST://0.0.0.0:9092"
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka-kraft:29093"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_JMX_PORT: 9101
+      KAFKA_JMX_HOSTNAME: localhost
+      CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+      - "9101:9101"
+  control-center:
+    image: confluentinc/cp-enterprise-control-center:7.7.1
+    container_name: control-center
+    environment:
+      CONTROL_CENTER_BOOTSTRAP_SERVERS: "kafka-kraft:29092"
+      CONTROL_CENTER_REPLICATION_FACTOR: 1
+    depends_on:
+      - kafka-kraft
+    ports:
+      - "9021:9021"
+  kafka-ui:
+    container_name: kafka-ui-default
+    image: provectuslabs/kafka-ui:latest
+    ports:
+      - 8181:8080
+    depends_on:
+      - kafka-kraft
+    environment:
+      DYNAMIC_CONFIG_ENABLED: true
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-kraft:29092
+      KAFKA_CLUSTERS_0_METRICS_PORT: 9101
+      #KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://schema-registry0:8085
+      #KAFKA_CLUSTERS_0_KAFKACONNECT_0_NAME: first
+      #KAFKA_CLUSTERS_0_KAFKACONNECT_0_ADDRESS: http://kafka-connect0:8083
+      KAFKA_CLUSTERS_0_AUDIT_TOPICAUDITENABLED: 'true'
+      KAFKA_CLUSTERS_0_AUDIT_CONSOLEAUDITENABLED: 'true'
