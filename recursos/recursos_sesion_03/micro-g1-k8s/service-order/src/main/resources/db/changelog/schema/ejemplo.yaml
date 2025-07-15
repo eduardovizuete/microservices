@@ -1,0 +1,25 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-schemas
+      context: stable
+      changes:
+        - sql:
+            sql: |
+              IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'sch_onboarding')
+              BEGIN
+                EXEC('CREATE SCHEMA sch_onboarding')
+              END
+  - changeSet:
+      id: create-schemas-test
+      context: test
+      changes:
+        - sql:
+            sql: |
+              CREATE SCHEMA IF NOT EXISTS sch_onboarding;
+  - changeSet:
+      id: drop-tables
+      context: test
+      changes:
+        - sql:
+            sql: |
+              DROP TABLE IF EXISTS sch_operation.exchange_rate;

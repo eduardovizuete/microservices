@@ -1,0 +1,95 @@
+openapi: 3.0.1
+info:
+  title: Servicio de Notificación
+  description: |-
+    Servicio como consumidor de Kafka
+  version: 1.0.0
+servers:
+  - url: /services-notify
+tags:
+  - name: notify
+    description: Notificaciones obtenidas de Kafka
+paths:
+  /notify:
+    get:
+      tags:
+        - notify
+      summary: Lista las notificaciones procesadas
+      description: Lista las notificaciones procesadas
+      operationId: findAllNotify
+      responses:
+        '200':
+          description: Operación exitosa
+          content:
+            application/stream+json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NotifyResponse'
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NotifyResponse'
+            application/xml:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NotifyResponse'
+        '400':
+          description: Invalid status value
+  /notify/{notifyId}:
+    get:
+      tags:
+        - notify
+      summary: Busca una notificación por ID
+      description: Busca una notificación por ID
+      operationId: getNotifyById
+      parameters:
+        - name: notifyId
+          in: path
+          description: ID de la notificación
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotifyResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/NotifyResponse'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Notifición no encontrada
+components:
+  schemas:
+    NotifyResponse:
+      required:
+        - id
+        - owner
+        - status
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identificador
+          example: 10
+        owner:
+          type: string
+          description: Owner procesado
+          example: doggie
+        status:
+          type: boolean
+          description: Estado actual
+          example: true
+        dateString:
+          type: string
+          description: Fecha
+          example: '2022/01/01'
+      xml:
+        name: notify

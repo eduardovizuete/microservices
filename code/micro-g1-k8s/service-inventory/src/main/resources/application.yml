@@ -2,5 +2,20 @@ spring:
   application:
     name: Microservices Inventory
 
+management:
+  endpoints:
+    web:
+      base-path: '/services-inventory/actuator'
+      exposure:
+        include: "*"
+  health:
+    show-details: always
+    probes:
+      enabled: true
+    livenessState:
+      enabled: true
+    readinessState:
+      enabled: true
+
 server:
   port: 8080

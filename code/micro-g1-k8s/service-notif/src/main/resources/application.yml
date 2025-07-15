@@ -2,6 +2,20 @@ spring:
   application:
     name: services-notify
 
+management:
+  endpoints:
+    web:
+      base-path: '/services-notify/actuator'
+      exposure:
+        include: "*"
+  health:
+    show-details: always
+    probes:
+      enabled: true
+    livenessState:
+      enabled: true
+    readinessState:
+      enabled: true
+
 server:
   port: 8082
-

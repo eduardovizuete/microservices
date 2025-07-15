@@ -1,0 +1,158 @@
+services:
+  mysql:
+    image: mysql:latest
+    container_name: my-sql-default
+    ports:
+      - "3306:3306"
+    network_mode: bridge
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456789
+    volumes:
+      - ./db-scripts/mysql-init.sql:/docker-entrypoint-initdb.d/mysql-init.sql
+  postgresql:
+    image: postgres:latest
+    container_name: postgre-sql
+    ports:
+      - "5432:5432"
+    network_mode: bridge
+    shm_size: 123mb
+    environment:
+      POSTGRES_PASSWORD: 123456789
+    volumes:
+      - ./db-scripts/postgres-init.sql:/docker-entrypoint-initdb.d/postgres-init.sql
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    network_mode: bridge
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: 123456789
+    volumes:
+      - ./db-scripts/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
+  kafka:
+    image: apache/kafka:3.8.0
+    container_name: kafka
+    network_mode: bridge
+    ports:
+      - "9092:9092"
+  kafka-kraft:
+    image: confluentinc/cp-kafka:7.7.1
+    container_name: kafka-kraft-default
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: "broker,controller"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka-kraft:29092,PLAINTEXT_HOST://localhost:9092"
+      KAFKA_LISTENERS: "PLAINTEXT://kafka-kraft:29092,CONTROLLER://kafka-kraft:29093,PLAINTEXT_HOST://0.0.0.0:9092"
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka-kraft:29093"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_JMX_PORT: 9101
+      KAFKA_JMX_HOSTNAME: localhost
+      CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+      - "9101:9101"
+  control-center:
+    image: confluentinc/cp-enterprise-control-center:7.7.1
+    container_name: control-center
+    environment:
+      CONTROL_CENTER_BOOTSTRAP_SERVERS: "kafka-kraft:29092"
+      CONTROL_CENTER_REPLICATION_FACTOR: 1
+    depends_on:
+      - kafka-kraft
+    ports:
+      - "9021:9021"
+  kafka-ui:
+    container_name: kafka-ui-default
+    image: provectuslabs/kafka-ui:latest
+    ports:
+      - 8181:8080
+    depends_on:
+      - kafka-kraft
+    environment:
+      DYNAMIC_CONFIG_ENABLED: true
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-kraft:29092
+      KAFKA_CLUSTERS_0_METRICS_PORT: 9101
+      #KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://schema-registry0:8085
+      #KAFKA_CLUSTERS_0_KAFKACONNECT_0_NAME: first
+      #KAFKA_CLUSTERS_0_KAFKACONNECT_0_ADDRESS: http://kafka-connect0:8083
+      KAFKA_CLUSTERS_0_AUDIT_TOPICAUDITENABLED: 'true'
+      KAFKA_CLUSTERS_0_AUDIT_CONSOLEAUDITENABLED: 'true'
+
+  ### Log aggregate
+  elasticsearch:
+    image: elasticsearch:8.15.0
+    container_name: elasticsearch-default
+    network_mode: bridge
+    ports:
+      - "9200:9200"
+    environment:
+      - discovery.type=single-node
+      - ELASTIC_PASSWORD=123456789
+      - xpack.security.enabled=true
+      - xpack.security.transport.ssl.enabled=false
+      - xpack.security.http.ssl.enabled=false
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+  log-stash:
+    image: docker.elastic.co/logstash/logstash:8.15.1
+    container_name: logstash-default
+    network_mode: bridge
+    ports:
+      - "5044:5044"
+      - "9600:9600"
+    environment:
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+      xpack.monitoring.enabled: false
+    volumes:
+      - ./config-docker/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    depends_on:
+      - elasticsearch
+  ### Comando para actualizar password:
+  ### curl -u elastic:123456789 -X POST "http://localhost:9200/_security/user/kibana_system/_password" -H "Content-Type: application/json" -d '{"password": "P3siUMxmUC7tW3SBDZhx"}'
+  kibana:
+    image: kibana:8.15.0
+    container_name: kibana
+    network_mode: bridge
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_URL=http://host.docker.internal:9200
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=P3siUMxmUC7tW3SBDZhx # Contraseña se debe de generar de Elasticksearch
+    volumes:
+      - ./config-docker/kibana.yml:/usr/share/kibana/config/kibana.yml
+    depends_on:
+      - elasticsearch
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    network_mode: bridge
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+
+  ### Metric
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: prometheus
+    network_mode: bridge
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config-docker/prometheus.yaml:/etc/prometheus/prometheus.yml
+
+volumes:
+  grafana-storage: {}
+  esdata:
+    driver: local
