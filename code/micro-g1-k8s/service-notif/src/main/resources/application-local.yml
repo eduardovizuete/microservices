@@ -9,3 +9,23 @@ spring:
     mongodb:
       uri: mongodb://root:123456789@localhost:27017
       database: db_notify
+
+otel:
+  traces:
+    exporter: otlp #otlp / zipkin / console / logging-otlp / none
+  metrics:
+    exporter: none #otlp / prometheus / none
+  logs:
+    exporter: none #otlp / console / logging-otlp / none
+  exporter:
+    otlp:
+      traces:
+        protocol: grpc
+        endpoint: http://localhost:4317
+        #headers: api-key=key,config-key=value
+      metrics:
+        protocol: http/protobuf
+        endpoint: http://localhost:4318/v1/metrics
+      logs:
+        protocol: grpc
+        endpoint: http://localhost:4317

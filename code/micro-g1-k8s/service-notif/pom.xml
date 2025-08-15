@@ -31,6 +31,17 @@
 		<openapi.generator.version>7.9.0</openapi.generator.version>
 		<micrometer.version>1.13.6</micrometer.version>
 	</properties>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>io.opentelemetry.instrumentation</groupId>
+				<artifactId>opentelemetry-instrumentation-bom</artifactId>
+				<version>2.9.0</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -81,6 +92,11 @@
 			<groupId>io.micrometer</groupId>
 			<artifactId>micrometer-registry-prometheus</artifactId>
 			<version>${micrometer.version}</version>
+		</dependency>
+		<!--Open Telemetry-->
+		<dependency>
+			<groupId>io.opentelemetry.instrumentation</groupId>
+			<artifactId>opentelemetry-spring-boot-starter</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
