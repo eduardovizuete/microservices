@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.codearqui.serviceinventory</groupId>
 	<artifactId>service-inventory</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<name>Microservices Inventory</name>
 	<description>Inventario relacionado a ordenes</description>
 	<url/>

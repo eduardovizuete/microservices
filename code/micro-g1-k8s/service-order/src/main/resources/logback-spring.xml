@@ -1,11 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <appender name="ELASTIC" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
-        <destination>localhost:5044</destination>
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <customFields>{"service-name":"services-order","version":"1.0.0"}</customFields>
-        </encoder>
-    </appender>
+    <springProfile name="local">
+        <appender name="ELASTIC" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+            <destination>localhost:5044</destination>
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                <customFields>{"service-name":"services-order","version":"1.0.0"}</customFields>
+            </encoder>
+        </appender>
+    </springProfile>
+    <springProfile name="default">
+        <appender name="ELASTIC" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+            <destination>logstash-service.obs-mon:5044</destination>
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                <customFields>{"service-name":"services-order","version":"1.0.0"}</customFields>
+            </encoder>
+        </appender>
+    </springProfile>
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>

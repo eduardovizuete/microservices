@@ -4,7 +4,7 @@
         <appender name="ELASTIC" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
             <destination>localhost:5044</destination>
             <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-                <customFields>{"service-name":"services-inventory","version":"1.0.0"}</customFields>
+                <customFields>{"service-name":"services-notify","version":"1.0.0"}</customFields>
             </encoder>
         </appender>
     </springProfile>
@@ -12,7 +12,7 @@
         <appender name="ELASTIC" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
             <destination>logstash-service.obs-mon:5044</destination>
             <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-                <customFields>{"service-name":"services-inventory","version":"1.0.0"}</customFields>
+                <customFields>{"service-name":"services-notify","version":"1.0.0"}</customFields>
             </encoder>
         </appender>
     </springProfile>
