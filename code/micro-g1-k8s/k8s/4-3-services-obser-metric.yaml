@@ -1,0 +1,163 @@
+##Services of Grafana
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana-services
+  namespace: obs-mon
+spec:
+  selector:
+    app: grafana
+  ports:
+    - name: tcp-grafana
+      protocol: TCP
+      port: 3000
+      targetPort: 3000
+
+# Services of Gaeger
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jaeger-service
+  namespace: obs-mon
+spec:
+  selector:
+    app: jaeger
+  ports:
+    - name: tcp-ui
+      port: 16686
+      targetPort: 16686
+      protocol: TCP
+    - name: tcp-grpc
+      port: 4317
+      targetPort: 4317
+      protocol: TCP
+
+# Services of ElastickSearch
+#---
+#apiVersion: v1
+#kind: Service
+#metadata:
+  #name: elasticsearch-service
+  #namespace: obs-mon
+#spec:
+  #selector:
+    #app: elasticsearch
+  #ports:
+    #- name: tcp-elasticsearch
+      #port: 9200
+      #targetPort: 9200
+      #protocol: TCP
+
+
+# Services of LogStash
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: logstash-service
+  namespace: obs-mon
+spec:
+  selector:
+    app: logstash
+  ports:
+    - name: tcp-conect
+      port: 5044
+      targetPort: 5044
+      protocol: TCP
+    - name: tcp-ui
+      port: 9600
+      targetPort: 9600
+      protocol: TCP
+
+#Services of Kibana
+#---
+#apiVersion: v1
+#kind: Service
+#metadata:
+  #name: kibana-service
+  #namespace: obs-mon
+#spec:
+  #selector:
+    #app: kibana
+  #ports:
+    #- name: tcp-kibana
+      #port: 5601
+      #targetPort: 5601
+      #protocol: TCP
+
+# Services Prometheus   
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus-service
+  namespace: obs-mon
+spec:
+  selector:
+    app: prometheus
+  ports:
+    - name: tcp-prometheus
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+
+#Services Kafka
+---
+#apiVersion: v1
+#kind: Service
+#metadata:
+  #name: kafka-kraft-service
+  #namespace: obs-mon
+#spec:
+  #selector:
+    #app: kafka-kraft
+  #ports:
+    #- name: tcp-external
+      #port: 9092
+      #targetPort: 9092
+      #protocol: TCP
+    #- name: tcp-internal
+      #port: 29092
+      #targetPort: 29092
+      #protocol: TCP
+    #- name: tcp-controller
+      #port: 29093
+      #targetPort: 29093
+      #protocol: TCP
+    #- name: tcp-jmx
+      #port: 9101
+      #targetPort: 9101
+      #protocol: TCP
+
+# # Services Control center kafka
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+  # name: control-center-service
+  # namespace: obs-mon
+# spec:
+  # selector:
+    # app: control-center
+  # ports:
+    # - name: tcp-ui
+      # port: 9021
+      # targetPort: 9021
+      # protocol: TCP
+      
+#Kafa UI
+---
+#apiVersion: v1
+#kind: Service
+#metadata:
+  #name: kafka-ui-service
+  #namespace: obs-mon
+#spec:
+  #selector:
+    #app: kafka-ui
+  #ports:
+    #- name: tcp-ui
+      #port: 9021
+      #targetPort: 8080
+      #protocol: TCP

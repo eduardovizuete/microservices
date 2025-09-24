@@ -1,0 +1,32 @@
+# Services Database PostgresSQL
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  labels:
+    app: postgres
+spec:
+  selector:
+    app: postgres
+  ports:
+    - name: tcp-postgres
+      protocol: TCP
+      port: 5432
+      targetPort: 5432
+
+---
+# Services of deploy order
+apiVersion: v1
+kind: Service
+metadata:
+  name: services-order-services
+  labels:
+    app: services-order
+spec:
+  selector:
+    app: services-order
+  ports:
+    - name: tcp-services-order
+      protocol: TCP
+      port: 8081
+      targetPort: 8081

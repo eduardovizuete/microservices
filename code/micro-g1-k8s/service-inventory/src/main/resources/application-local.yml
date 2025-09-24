@@ -16,10 +16,3 @@ otel:
       traces:
         protocol: grpc
         endpoint: http://localhost:4317
-        #headers: api-key=key,config-key=value
-      metrics:
-        protocol: http/protobuf
-        endpoint: http://localhost:4318/v1/metrics
-      logs:
-        protocol: grpc
-        endpoint: http://localhost:4317

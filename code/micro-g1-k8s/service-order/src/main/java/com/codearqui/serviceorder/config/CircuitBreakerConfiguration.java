@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class ResiliencePattern {
+public class CircuitBreakerConfiguration {
 
     private static final String BACKEND_IN = "microInventory";
 

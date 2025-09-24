@@ -1,0 +1,77 @@
+#Configmap MySql
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-init-scripts
+data:
+  init.sql: |
+    CREATE DATABASE inventory;
+    
+    USE inventory;
+    
+    CREATE TABLE products (
+    id INT NOT NULL,
+    code varchar(50) NOT NULL,
+    nameProduct varchar(250) NOT NULL,
+    stock INT NOT NULL,
+    price DOUBLE NOT NULL,
+    CONSTRAINT products_pk PRIMARY KEY (id)
+    )
+    ENGINE=InnoDB
+    DEFAULT CHARSET=utf8mb4
+    COLLATE=utf8mb4_0900_ai_ci;
+    
+    ALTER TABLE products MODIFY COLUMN id int auto_increment NOT NULL;
+    
+    ALTER TABLE products MODIFY COLUMN code varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci unique NOT NULL;
+
+---
+# Configmap Services Inventory
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: services-inventory-config
+data:
+  services-inventory-config.yml: |
+    spring:
+      application:
+        name: services-inventory
+      r2dbc:
+        url: r2dbc:mysql://mysql-services:3306/inventory
+        username: root
+        password: 123456789
+    management:
+      tracing:
+        sampling:
+          probability: 1.0
+      endpoints:
+        web:
+          base-path: '/services-inventory/actuator'
+          exposure:
+            include: "*"
+      endpoint:
+        health:
+          show-details: always
+          probes:
+            enabled: true
+      health:
+        livenessState:
+          enabled: true
+        readinessState:
+          enabled: true
+
+    otel:
+      traces:
+        exporter: otlp #otlp / zipkin / console / logging-otlp / none
+      metrics:
+        exporter: none #otlp / prometheus / none
+      logs:
+        exporter: none #otlp / console / logging-otlp / none
+      exporter:
+        otlp:
+          traces:
+            protocol: grpc
+            endpoint: http://jaeger-service.obs-mon:4317
+
+    server:
+      port: 8080

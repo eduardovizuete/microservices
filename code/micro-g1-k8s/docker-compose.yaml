@@ -85,7 +85,8 @@ services:
       KAFKA_CLUSTERS_0_AUDIT_TOPICAUDITENABLED: 'true'
       KAFKA_CLUSTERS_0_AUDIT_CONSOLEAUDITENABLED: 'true'
 
-  ### Log aggregate
+  ### Observability
+  ### Comando para actualizar password: curl -u elastic:123456789 -X POST "http://localhost:9200/_security/user/kibana_system/_password" -H "Content-Type: application/json" -d '{"password": "P3siUMxmUC7tW3SBDZhx"}'
   elasticsearch:
     image: elasticsearch:8.15.0
     container_name: elasticsearch-default
@@ -114,8 +115,6 @@ services:
       - ./config-docker/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
     depends_on:
       - elasticsearch
-  ### Comando para actualizar password:
-  ### curl -u elastic:123456789 -X POST "http://localhost:9200/_security/user/kibana_system/_password" -H "Content-Type: application/json" -d '{"password": "P3siUMxmUC7tW3SBDZhx"}'
   kibana:
     image: kibana:8.15.0
     container_name: kibana
@@ -141,7 +140,8 @@ services:
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
-  ### Metric
+
+  ### Metrics
   prometheus:
     image: prom/prometheus:v2.54.1
     container_name: prometheus

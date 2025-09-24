@@ -1,5 +1,5 @@
-// Conexion y creacion de la base de datos
+// Conexión y creación de la base de datos
 db = db.getSiblingDB('db_notify');
 
-// Creacion de la coleccion 'notify_orders'
+// Creación de la colección 'notify_orders'
 db.createCollection('notify_orders');

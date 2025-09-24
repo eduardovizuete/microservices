@@ -1,0 +1,34 @@
+# Ingress controller
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: services-ingress
+  labels:
+    name: services-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: services-services.test
+      http:
+        paths:
+          - pathType: Prefix
+            path: /services-order
+            backend:
+              service:
+                name: services-order-services
+                port:
+                  number: 8081
+          - pathType: Prefix
+            path: /services-inventory
+            backend:
+              service:
+                name: services-inventory-services
+                port:
+                  number: 8082
+          #- pathType: Prefix
+            #path: /services-notify
+            #backend:
+              #service:
+                #name: services-notify-services
+                #port:
+                  #number: 8082

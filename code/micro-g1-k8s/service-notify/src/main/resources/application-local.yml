@@ -1,13 +1,13 @@
 spring:
   kafka:
     bootstrap-servers: localhost:9092
-    producer:
-      retries: 1
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: services-order
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
   data:
     mongodb:
-      uri: mongodb://root:123456789@localhost:27017
+      uri: mongodb://root:123456789@localhost:27017/
       database: db_notify
 
 otel:
@@ -20,12 +20,5 @@ otel:
   exporter:
     otlp:
       traces:
-        protocol: grpc
-        endpoint: http://localhost:4317
-        #headers: api-key=key,config-key=value
-      metrics:
-        protocol: http/protobuf
-        endpoint: http://localhost:4318/v1/metrics
-      logs:
         protocol: grpc
         endpoint: http://localhost:4317

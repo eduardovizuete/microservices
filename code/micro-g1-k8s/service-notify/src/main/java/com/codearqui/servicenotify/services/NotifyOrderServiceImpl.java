@@ -53,5 +53,4 @@ public class NotifyOrderServiceImpl implements NotifyOrderService {
                         .status(notify.isStatus())
                         .dateString(notify.getDateString()));
     }
-
 }

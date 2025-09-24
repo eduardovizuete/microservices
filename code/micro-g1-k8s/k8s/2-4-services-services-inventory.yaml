@@ -1,0 +1,32 @@
+# Services of deploy MySql
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-services
+  labels:
+    app: mysql
+spec:
+  selector:
+    app: mysql
+  ports:
+    - name: tcp-mysql
+      protocol: TCP
+      port: 3306
+      targetPort: 3306
+
+---
+# Services of deploy services inventory
+apiVersion: v1
+kind: Service
+metadata:
+  name: services-inventory-services
+  labels:
+    app: services-inventory
+spec:
+  selector:
+    app: services-inventory
+  ports:
+    - name: tcp-services-inventory
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
