@@ -24,7 +24,7 @@ spec:
               service:
                 name: services-inventory-services
                 port:
-                  number: 8082
+                  number: 8080
           #- pathType: Prefix
             #path: /services-notify
             #backend:
