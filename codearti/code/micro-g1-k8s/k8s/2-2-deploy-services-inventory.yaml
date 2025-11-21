@@ -1,0 +1,84 @@
+#Deploy Database MySql
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-deploy
+  labels:
+    app: mysql
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: mysql
+        version: v1
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:latest
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: "123456789"
+          volumeMounts:
+            - name: mysql-init-scripts
+              mountPath: /docker-entrypoint-initdb.d
+      volumes:
+        - name: mysql-init-scripts
+          configMap:
+            name: mysql-init-scripts
+
+---
+#Deploy app services-inventory
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: services-inventory-deploy
+  labels:
+    app: services-inventory
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: services-inventory
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: services-inventory
+        version: v1
+    spec:
+      containers:
+        - name: services-inventory
+          image: eduardovizuete/service-inventory:1.0
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: config-volume
+              mountPath: /config
+          env:
+            - name: SPRING_CONFIG_LOCATION
+              value: file:/config/services-inventory-config.yml
+          livenessProbe:
+            httpGet:
+              path: /services-inventory/actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /services-inventory/actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+      volumes:
+        - name: config-volume
+          configMap:
+            name: services-inventory-config

@@ -1,0 +1,127 @@
+#Configmap PostgresSQL
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init-scripts
+data:
+  init.sql: |
+    CREATE DATABASE "orderdb"
+    WITH 
+    OWNER = postgres
+    ENCODING = 'UTF8'
+    TABLESPACE = pg_default
+    CONNECTION LIMIT = -1;
+  
+    -- Conéctate a la base de datos recién creada
+    \connect orderdb;
+---
+#Configmap Micro Order
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: services-order-config
+data:
+  services-order-config.yml: |
+    spring:
+      application:
+        name: services-order
+      r2dbc:
+        url: r2dbc:postgresql://postgres-service:5432/orderdb
+        username: postgres
+        password: 123456789
+      liquibase:
+        enabled: true
+        change-log: classpath:db/changelog/master.yaml
+        drop-first: false
+        url: jdbc:postgresql://postgres-service:5432/orderdb
+        driver-class-name: org.postgresql.Driver
+        user: postgres
+        password: 123456789
+        #contexts: stable
+      kafka:
+        bootstrap-servers: kafka-kraft-service.obs-mon:9092
+        producer:
+          retries: 1
+          key-serializer: org.apache.kafka.common.serialization.StringSerializer
+          value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    management:
+      tracing:
+        sampling:
+          probability: 1.0
+      endpoints:
+        web:
+          base-path: '/services-order/actuator'
+          exposure:
+            include: "*"
+      endpoint:
+        health:
+          show-details: always
+          probes:
+            enabled: true
+      health:
+        livenessState:
+          enabled: true
+        readinessState:
+          enabled: true
+    
+    otel:
+      traces:
+        exporter: otlp #otlp / zipkin / console / logging-otlp / none
+      metrics:
+        exporter: none #otlp / prometheus / none
+      logs:
+        exporter: none #otlp / console / logging-otlp / none
+      exporter:
+        otlp:
+          traces:
+            protocol: grpc
+            endpoint: http://jaeger-service.obs-mon:4317
+          metrics:
+            protocol: http/protobuf
+            endpoint: http://host.docker.internal:4318/v1/metrics
+    
+    client-micro:
+      micro-order:
+        base-url: ${MICRO_INVENTORY_URL}
+    
+    resilience4j:
+      #1
+      retry:
+        configs:
+          default:
+            maxAttempts: 4
+            waitDuration: 3s
+        instances:
+          microInventory:
+            baseConfig: default
+      #2
+      circuitbreaker:
+        configs:
+          default:
+            slidingWindowSize: 5
+            failureRateThreshold: 50
+            permittedNumberOfCallsInHalfOpenState: 3
+            waitDurationInOpenState: 10s
+            registerHealthIndicator: true
+        instances:
+          microInventory:
+            baseConfig: default
+      #3
+      ratelimiter:
+        configs:
+          default:
+            limitForPeriod: 10
+            limitRefreshPeriod: 60s
+            timeoutDuration: 3s
+            registerHealthIndicator: true
+        instances:
+          microInventory:
+            baseConfig: default
+      #4
+      timelimiter:
+        instances:
+          microInventory:
+            timeoutDuration: 1s
+            cancelRunningFuture: true
+    server:
+      port: 8081

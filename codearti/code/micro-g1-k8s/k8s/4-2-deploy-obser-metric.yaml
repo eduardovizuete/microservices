@@ -1,0 +1,434 @@
+### Deploy Grafana
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: grafana-deploy
+ namespace: obs-mon
+ labels:
+   app: grafana
+   version: v1
+spec:
+ replicas: 1
+ selector:
+   matchLabels:
+     app: grafana
+     version: v1
+ template:
+   metadata:
+     labels:
+       app: grafana
+       version: v1
+   spec:
+     containers:
+       - name: grafana
+         image: grafana/grafana:latest
+         ports:
+           - containerPort: 3000
+         env:
+           - name: GF_SECURITY_ADMIN_USER
+             value: admin
+           - name: GF_SECURITY_ADMIN_PASSWORD
+             value: admin
+         volumeMounts:
+           - name: grafana-storage
+             mountPath: /var/lib/grafana
+         resources:
+           requests:
+             memory: "100Mi"
+             cpu: "200m"
+           limits:
+             memory: "250Mi"
+             cpu: "400m"
+     volumes:
+       - name: grafana-storage
+         emptyDir: {}
+
+---
+## Deploy Jaeger
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: jaeger-deploy
+ namespace: obs-mon
+ labels:
+   app: jaeger
+   version: v1
+spec:
+ replicas: 1
+ selector:
+   matchLabels:
+     app: jaeger
+     version: v1
+ template:
+   metadata:
+     labels:
+       app: jaeger
+       version: v1
+   spec:
+     containers:
+       - name: jaeger
+         image: jaegertracing/all-in-one:1.61.0
+         ports:
+           - containerPort: 16686
+           - containerPort: 4317
+         resources:
+           requests:
+             memory: "40Mi"
+             cpu: "50m"
+           limits:
+             memory: "100Mi"
+             cpu: "100m"
+
+---
+# Persistent Data ElastickSearch
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: elasticsearch-pvc
+  namespace: obs-mon
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 4Gi
+
+---
+# Deploy ElasticSearch
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: elasticsearch-deploy
+  namespace: obs-mon
+  labels:
+    app: elasticsearch
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: elasticsearch
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: elasticsearch
+        version: v1
+    spec:
+      containers:
+        - name: elasticsearch
+          image: elasticsearch:8.15.0
+          ports:
+            - containerPort: 9200
+          env:
+            - name: discovery.type
+              value: "single-node"
+            - name: ELASTIC_PASSWORD
+              value: "123456789"
+            - name: xpack.security.enabled
+              value: "true"
+            - name: xpack.security.transport.ssl.enabled
+              value: "false"
+            - name: xpack.security.http.ssl.enabled
+              value: "false"
+          resources:
+            requests:
+              memory: "650Mi"
+              cpu: "400m"
+            limits:
+              memory: "850Mi"
+              cpu: "650m"
+          volumeMounts:
+            - name: elasticsearch-data
+              mountPath: /usr/share/elasticsearch/data
+      volumes:
+        - name: elasticsearch-data
+          persistentVolumeClaim:
+            claimName: elasticsearch-pvc
+
+---
+# Deploy Logstash
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logstash-deploy
+  namespace: obs-mon
+  labels:
+    app: logstash
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logstash
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: logstash
+        version: v1
+    spec:
+      containers:
+        - name: logstash
+          image: docker.elastic.co/logstash/logstash:8.15.1
+          env:
+            - name: LS_JAVA_OPTS
+              value: "-Xmx256m -Xms256m"
+            - name: xpack.monitoring.enabled
+              value: "false"
+          volumeMounts:
+            - name: logstash-config-volume
+              mountPath: /usr/share/logstash/pipeline/logstash.conf
+              subPath: logstash.conf
+          ports:
+            - containerPort: 5044
+            - containerPort: 9600
+      volumes:
+        - name: logstash-config-volume
+          configMap:
+            name: logstash-config
+
+---
+#Deploy Kibana
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kibana-deploy
+  namespace: obs-mon
+  labels:
+    app: kibana
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kibana
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: kibana
+        version: v1
+    spec:
+      containers:
+        - name: kibana
+          image: kibana:8.15.0
+          ports:
+            - containerPort: 5601
+          env:
+            - name: ELASTICSEARCH_URL
+              value: "http://elasticsearch-service:9200"
+            - name: ELASTICSEARCH_USERNAME
+              value: "kibana_system"
+            - name: ELASTICSEARCH_PASSWORD
+              value: "GmAaeAIxw+0Vb-0jpVJL"
+          resources:
+            requests:
+              memory: "650Mi"
+              cpu: "400m"
+            limits:
+              memory: "850Mi"
+              cpu: "650m"
+          volumeMounts:
+            - name: kibana-config-volume
+              mountPath: /usr/share/kibana/config/kibana.yml
+              subPath: kibana.yml
+      volumes:
+        - name: kibana-config-volume
+          configMap:
+            name: kibana-config
+
+---
+# Deploy Prometheus
+ apiVersion: apps/v1
+ kind: Deployment
+ metadata:
+   name: prometheus-deploy
+   namespace: obs-mon
+   labels:
+     app: prometheus
+     version: v1
+ spec:
+   replicas: 1
+   selector:
+     matchLabels:
+       app: prometheus
+       version: v1
+   template:
+     metadata:
+       labels:
+         app: prometheus
+         version: v1
+     spec:
+       containers:
+         - name: prometheus
+           image: prom/prometheus:v2.54.1
+           args:
+             - --config.file=/etc/prometheus/prometheus.yml
+           volumeMounts:
+             - name: prometheus-config-volume
+               mountPath: /etc/prometheus/prometheus.yml
+               subPath: prometheus.yaml
+           ports:
+             - containerPort: 9090
+           resources:
+             requests:
+               memory: "100Mi"
+               cpu: "100m"
+             limits:
+               memory: "150Mi"
+               cpu: "150m"
+       volumes:
+         - name: prometheus-config-volume
+           configMap:
+             name: prometheus-config
+
+---
+# Deploy Kafka Confluent
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-kraft-deploy
+  namespace: obs-mon
+  labels:
+    app: kafka-kraft
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka-kraft
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: kafka-kraft
+        version: v1
+    spec:
+      containers:
+        - name: kafka-kraft
+          image: confluentinc/cp-kafka:7.7.1
+          env:
+            - name: KAFKA_NODE_ID
+              value: "1"
+            - name: KAFKA_PROCESS_ROLES
+              value: "broker,controller"
+            - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+              value: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT"
+            - name: KAFKA_ADVERTISED_LISTENERS
+              value: "PLAINTEXT://kafka-kraft-service.obs-mon:29092,PLAINTEXT_HOST://kafka-kraft-service.obs-mon:9092"
+            - name: KAFKA_LISTENERS
+              value: "PLAINTEXT://0.0.0.0:29092,CONTROLLER://0.0.0.0:29093,PLAINTEXT_HOST://0.0.0.0:9092"
+            - name: KAFKA_CONTROLLER_QUORUM_VOTERS
+              value: "1@kafka-kraft-service.obs-mon:29093"
+            - name: KAFKA_INTER_BROKER_LISTENER_NAME
+              value: "PLAINTEXT"
+            - name: KAFKA_CONTROLLER_LISTENER_NAMES
+              value: "CONTROLLER"
+            - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+              value: "1"
+            - name: KAFKA_JMX_PORT
+              value: "9101"
+            - name: KAFKA_JMX_HOSTNAME
+              value: "localhost"
+            - name: CLUSTER_ID
+              value: "MkU3OEVBNTcwNTJENDM2Qk"
+          ports:
+            - containerPort: 9092
+              name: external
+            - containerPort: 29092
+              name: internal
+            - containerPort: 29093
+              name: controller
+            - containerPort: 9101
+              name: jmx
+          resources:
+            requests:
+              memory: "250Mi"
+              cpu: "250m"
+            limits:
+              memory: "450Mi"
+              cpu: "400m"
+
+---
+ # Control center kafka
+ apiVersion: apps/v1
+ kind: Deployment
+ metadata:
+   name: control-center-deploy
+   namespace: obs-mon
+ spec:
+   replicas: 1
+   selector:
+     matchLabels:
+       app: control-center
+   template:
+     metadata:
+       labels:
+         app: control-center
+     spec:
+       containers:
+         - name: control-center
+           image: confluentinc/cp-enterprise-control-center:7.7.1
+           env:
+             - name: CONTROL_CENTER_BOOTSTRAP_SERVERS
+               value: "kafka-kraft-service.obs-mon:29092"
+             - name: CONTROL_CENTER_REPLICATION_FACTOR
+               value: "1"
+           ports:
+             - containerPort: 9021
+           resources:
+             requests:
+               memory: "450Mi"
+               cpu: "200m"
+             limits:
+               memory: "800Mi"
+               cpu: "500m"
+
+---
+# Kafka UI
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-ui-deploy
+  namespace: obs-mon
+  labels:
+    app: kafka-ui
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka-ui
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: kafka-ui
+        version: v1
+    spec:
+      containers:
+        - name: kafka-ui
+          image: provectuslabs/kafka-ui:latest
+          env:
+            - name: DYNAMIC_CONFIG_ENABLED
+              value: "true"
+            - name: KAFKA_CLUSTERS_0_NAME
+              value: "local"
+            - name: KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS
+              value: "kafka-kraft-service.obs-mon:29092"
+            - name: KAFKA_CLUSTERS_0_METRICS_PORT
+              value: "9101"
+            - name: KAFKA_CLUSTERS_0_AUDIT_TOPICAUDITENABLED
+              value: "true"
+            - name: KAFKA_CLUSTERS_0_AUDIT_CONSOLEAUDITENABLED
+              value: "true"
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "150Mi"
+              cpu: "50m"
+            limits:
+              memory: "350Mi"
+              cpu: "200m"

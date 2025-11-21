@@ -1,0 +1,32 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-datatable-order
+      author: ed
+      #context: dev, test, local
+      changes:
+        - createTable:
+            tableName: order_shop
+            #schemaName: service-order
+            columns:
+              - column:
+                  name: id
+                  type: INT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: code_product
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: date_order
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status_order
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false

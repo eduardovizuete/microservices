@@ -1,6 +1,0 @@
-quarkus:
-  log:
-    level: INFO
-  flyway:
-    migrate-at-start: true
-    locations: db/migration

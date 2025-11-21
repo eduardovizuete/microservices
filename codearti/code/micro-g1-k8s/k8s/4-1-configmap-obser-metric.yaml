@@ -1,0 +1,70 @@
+# Configmap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-config
+  namespace: obs-mon
+data:
+  logstash.conf: |
+    input {
+      tcp {
+        port => 5044
+        codec => json_lines {
+          ecs_compatibility => "v8"
+        }
+      }
+    }
+  
+    output {
+      stdout {
+        codec => rubydebug
+      }
+      elasticsearch {
+        hosts => ["http://elasticsearch-service:9200"]
+        index => "logstash-%{+YYYY.MM.dd}"
+        user => "elastic"
+        password => "123456789"
+      }
+    }
+   
+# Configmap para kibana
+---   
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kibana-config
+  namespace: obs-mon
+data:
+  kibana.yml: |
+    server.host: "0.0.0.0"
+    server.shutdownTimeout: "5s"
+    elasticsearch.hosts: ["http://elasticsearch-service:9200"]
+    monitoring.ui.container.elasticsearch.enabled: true
+
+---   
+# Configmap Prometheus
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: obs-mon
+data:
+  prometheus.yaml: |
+    global:
+      scrape_interval: 10s
+      evaluation_interval: 10s
+
+    scrape_configs:
+      # k8s
+      - job_name: 'services-order-k8s'
+        metrics_path: 'services-order/actuator/prometheus'
+        static_configs:
+          - targets: [ 'services-order-services.default:8081' ]
+      - job_name: 'services-inventory-k8s'
+        metrics_path: 'services-inventory/actuator/prometheus'
+        static_configs:
+          - targets: [ 'services-inventory-services.default:8080' ]
+      - job_name: 'services-notify-k8s'
+        metrics_path: 'services-notify/actuator/prometheus'
+        static_configs:
+          - targets: [ 'services-notify-services.default:8082' ]

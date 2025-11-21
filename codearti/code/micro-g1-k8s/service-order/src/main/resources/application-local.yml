@@ -1,0 +1,79 @@
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/orderdb
+    username: postgres
+    password: 123456789
+
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/master.yaml
+    drop-first: false
+    url: jdbc:postgresql://localhost:5432/orderdb
+    driver-class-name: org.postgresql.Driver
+    user: postgres
+    password: 123456789
+    #contexts: stable
+
+client-micro:
+  micro-order:
+    base-url: http://localhost:8080/services-inventory
+
+otel:
+  traces:
+    exporter: otlp #otlp / zipkin / console / logging-otlp / none
+  metrics:
+    exporter: none #otlp / prometheus / none
+  logs:
+    exporter: none #otlp / console / logging-otlp / none
+  exporter:
+    otlp:
+      traces:
+        protocol: grpc
+        endpoint: http://localhost:4317
+        #headers: api-key=key,config-key=value
+      metrics:
+        protocol: http/protobuf
+        endpoint: http://localhost:4318/v1/metrics
+      logs:
+        protocol: grpc
+        endpoint: http://localhost:4317
+
+resilience4j:
+  #1
+  retry:
+    configs:
+      default:
+        maxRetryAttempts: 4 # Número máximo de intentos de reintentos : 1 - 3seg, 2 - 6seg, 3 - 9seg, 4 - 9-12seg
+        waitDuration: 3s # Duración de espera entre reintentos
+    instances:
+      microInventory:
+        baseConfig: default
+  #2
+  circuitbreaker:
+    configs:
+      default:
+        slidingWindowSize: 5 # Número de eventos que se consideran para calcular el porcentaje de fallos
+        failureRateThreshold: 50 # Equivale en porcentaje a 50%
+        permittedNumberOfCallsInHalfOpenState: 3 # Número de llamadas permitidas en estado semiabierto
+        waitDurationInOpenState: 5s # Duración en la que el circuito permanece en estado abierto
+        registerHealthIndicator: true # Habilita el indicador de salud
+    instances:
+      microInventory:
+        baseConfig: default
+  #3
+  ratelimiter:
+    configs:
+      default:
+        limitForPeriod: 10 # Número máximo de llamadas permitidas en un periodo
+        limitRefreshPeriod: 60s # Periodo de tiempo en el que se reinicia el contador
+        timeoutDuration: 3s # Duración de espera para obtener un permiso
+        registerHealthIndicator: true # Habilita el indicador de salud
+    instances:
+      microInventory:
+        baseConfig: default
+  #4
+  timelimiter:
+    instances:
+      microInventory:
+        timeoutDuration: 1s # Duración máxima de espera para una llamada
+        cancelRunningFuture: true # Cancela la llamada en ejecución

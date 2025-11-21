@@ -1,0 +1,18 @@
+spring:
+  r2dbc:
+    url: r2dbc:pool:mysql://localhost:3306/inventory
+    username: root
+    password: 123456789
+
+otel:
+  traces:
+    exporter: otlp #otlp / zipkin / console / logging-otlp / none
+  metrics:
+    exporter: none #otlp / prometheus / none
+  logs:
+    exporter: none #otlp / console / logging-otlp / none
+  exporter:
+    otlp:
+      traces:
+        protocol: grpc
+        endpoint: http://localhost:4317
